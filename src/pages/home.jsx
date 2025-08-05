@@ -1,17 +1,13 @@
-// src/pages/home.jsx
-import React, { useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useState, useCallback } from "react";
+import { GoogleMap, StreetViewPanorama, useJsApiLoader } from "@react-google-maps/api";
 import landCoordinates from "../../scripts/land_coordinates.json";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 
-// Fix default marker icon issue
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: new URL("leaflet/dist/images/marker-icon-2x.png", import.meta.url),
-  iconUrl: new URL("leaflet/dist/images/marker-icon.png", import.meta.url),
-  shadowUrl: new URL("leaflet/dist/images/marker-shadow.png", import.meta.url),
-});
+const containerStyle = {
+  width: "80%",
+  height: "400px",
+  margin: "1rem auto",
+  borderRadius: "8px"
+};
 
 function getRandomCoordinate() {
   const idx = Math.floor(Math.random() * landCoordinates.length);
@@ -21,6 +17,11 @@ function getRandomCoordinate() {
 
 export default function Home() {
   const [coordinate, setCoordinate] = useState(getRandomCoordinate());
+
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0" // 🔑 Replace with your actual API key
+  });
 
   const handleNewPlace = () => {
     setCoordinate(getRandomCoordinate());
@@ -34,21 +35,25 @@ export default function Home() {
         <strong>{coordinate.lon}</strong>
       </p>
 
-      <div style={{ height: "400px", width: "80%", margin: "1rem auto" }}>
-        <MapContainer
-          center={[coordinate.lat, coordinate.lon]}
-          zoom={5}
-          style={{ height: "100%", width: "100%", borderRadius: "8px" }}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-          />
-          <Marker position={[coordinate.lat, coordinate.lon]}>
-            <Popup>Stand here.</Popup>
-          </Marker>
-        </MapContainer>
-      </div>
+      {isLoaded && (
+        <>
+          {/* Street View */}
+          <div style={containerStyle}>
+            <GoogleMap
+              mapContainerStyle={{ height: "100%", width: "100%" }}
+              center={{ lat: coordinate.lat, lng: coordinate.lon }}
+              zoom={16}
+              options={{ streetViewControl: false }}
+            >
+              <StreetViewPanorama
+                position={{ lat: coordinate.lat, lng: coordinate.lon }}
+                visible={true}
+                options={{ pov: { heading: 100, pitch: 0 } }}
+              />
+            </GoogleMap>
+          </div>
+        </>
+      )}
 
       <button
         onClick={handleNewPlace}
@@ -59,7 +64,7 @@ export default function Home() {
           color: "#fff",
           border: "none",
           borderRadius: "5px",
-          cursor: "pointer",
+          cursor: "pointer"
         }}
       >
         Show me another spot
