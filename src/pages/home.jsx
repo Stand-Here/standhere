@@ -25,7 +25,7 @@ export default function Home() {
   const [showStreetView, setShowStreetView] = useState(true);
   const [streetViewAvailable, setStreetViewAvailable] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(5); // Start zoomed out
-  const [locationInfo, setLocationInfo] = useState({ city: "", country: "" });
+  const [country, setCountry] = useState("Unknown Location");
   const mapRef = useRef(null);
 
   const onMapLoad = (map) => {
@@ -34,65 +34,56 @@ export default function Home() {
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0", // ⚠️ move to env in prod
+    googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0", // ⚠️ Use env var in production
   });
 
-  // Improved reverse geocode function with better city fallback logic
-  const fetchCityCountry = (lat, lon) => {
-    if (!window.google) return;
+  const fetchCountryAndCity = (lat, lon) => {
+  if (!window.google) return;
 
-    const geocoder = new window.google.maps.Geocoder();
-    const latlng = { lat, lng: lon };
+  const geocoder = new window.google.maps.Geocoder();
+  const latlng = { lat, lng: lon };
 
-    geocoder.geocode({ location: latlng }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        let city = "";
-        let country = "";
+  geocoder.geocode({ location: latlng }, (results, status) => {
+    if (status === "OK" && results.length > 0) {
+      const components = results[0].address_components;
 
-        const components = results[0].address_components;
+      const countryComponent = components.find((c) =>
+        c.types.includes("country")
+      );
+      const cityComponent =
+        components.find((c) => c.types.includes("locality")) ||
+        components.find((c) => c.types.includes("administrative_area_level_1")) ||
+        components.find((c) => c.types.includes("postal_town"));
 
-        // Try multiple types for city, in priority order
-        const cityTypes = [
-          "locality",
-          "postal_town",
-          "administrative_area_level_2",
-          "administrative_area_level_1",
-        ];
+      const country = countryComponent ? countryComponent.long_name : "Unknown";
+      const city = cityComponent ? cityComponent.long_name : null;
 
-        for (const type of cityTypes) {
-          const comp = components.find((c) => c.types.includes(type));
-          if (comp) {
-            city = comp.long_name;
-            break;
-          }
-        }
-
-        // Find country component
-        const countryComp = components.find((c) => c.types.includes("country"));
-        if (countryComp) {
-          country = countryComp.long_name;
-        }
-
-        // If city is empty or same as country, omit city for clarity
-        if (!city || city === country) {
-          city = "";
-        }
-
-        setLocationInfo({ city, country });
+      if (city) {
+        setCountry(`${city}, ${country}`);
       } else {
-        setLocationInfo({ city: "", country: "" });
-        console.error("Geocoder failed due to: " + status);
+        setCountry(country);
       }
-    });
-  };
+    } else {
+      console.error("Geocoder failed due to: " + status);
+      setCountry("Unknown");
+    }
+  });
+};
+
+
+
 
   useEffect(() => {
     if (!isLoaded) return;
 
-    fetchCityCountry(coordinate.lat, coordinate.lon);
+    fetchCountryAndCity(coordinate.lat, coordinate.lon);
+;
 
     const svService = new window.google.maps.StreetViewService();
-    const latLng = new window.google.maps.LatLng(coordinate.lat, coordinate.lon);
+    const latLng = new window.google.maps.LatLng(
+      coordinate.lat,
+      coordinate.lon
+    );
 
     svService.getPanorama({ location: latLng, radius: 100 }, (data, status) => {
       if (status === window.google.maps.StreetViewStatus.OK) {
@@ -112,11 +103,10 @@ export default function Home() {
       mapRef.current.setZoom(5);
       mapRef.current.panTo({ lat: newCoord.lat, lng: newCoord.lon });
 
-      // Smooth zoom transition
-      let currentZoom = 1;
+      let currentZoom = 5;
       const targetZoom = 16;
       const step = 1;
-      const interval = 300; // ms between steps
+      const interval = 250;
 
       const zoomInterval = setInterval(() => {
         currentZoom += step;
@@ -142,11 +132,9 @@ export default function Home() {
         <strong>{coordinate.lon}</strong>
       </p>
       <p>
-        Location:{" "}
+        Country:{" "}
         <strong>
-          {locationInfo.city
-            ? `${locationInfo.city}, ${locationInfo.country}`
-            : locationInfo.country || "Unknown Location"}
+          {country}
         </strong>
       </p>
 
