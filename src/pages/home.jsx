@@ -49,6 +49,7 @@ function getRandomCoordinate() {
 
 // helper to apply or remove the 45° tilt
 function apply3D(map, enable) {
+  if (!map) return;
   map.setTilt(enable ? 45 : 0);
   map.setHeading(enable ? 90 : 0);
 }
@@ -58,7 +59,7 @@ export default function Home() {
 
   const [coordinate, setCoordinate] = useState(getRandomCoordinate());
   const [zoomLevel, setZoomLevel] = useState(5);
-  const [showStreetView, setShowStreetView] = useState(true);
+  const [showStreetView, setShowStreetView] = useState(false);
   const [streetViewAvailable, setStreetViewAvailable] = useState(false);
   const [is3D, setIs3D] = useState(true);
   const [country, setCountry] = useState("Unknown Location");
@@ -68,30 +69,29 @@ export default function Home() {
     googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0",
   });
 
-  // when map loads, save ref and apply tilt/heading
   function onMapLoad(map) {
     mapRef.current = map;
-    apply3D(map, is3D);
+    map.setZoom(18); // Ensure high enough zoom
+    apply3D(map, is3D && !streetViewAvailable);
   }
 
-  // re-apply 3D whenever the flag changes
   useEffect(() => {
-    if (mapRef.current) apply3D(mapRef.current, is3D);
-  }, [is3D]);
+    if (mapRef.current) {
+      apply3D(mapRef.current, is3D && !streetViewAvailable);
+    }
+  }, [is3D, streetViewAvailable]);
 
-  // fetch country/city via Geocoder & check Street View availability
+  // Fetch country/city + Street View availability
   useEffect(() => {
     if (!isLoaded) return;
-    // reverse geocode
+
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode(
       { location: { lat: coordinate.lat, lng: coordinate.lon } },
       (results, status) => {
         if (status === "OK" && results.length) {
           const comps = results[0].address_components;
-          const countryComp = comps.find((c) =>
-            c.types.includes("country")
-          );
+          const countryComp = comps.find((c) => c.types.includes("country"));
           const cityComp =
             comps.find((c) => c.types.includes("locality")) ||
             comps.find((c) =>
@@ -109,7 +109,6 @@ export default function Home() {
       }
     );
 
-    // Street View check
     const sv = new window.google.maps.StreetViewService();
     sv.getPanorama(
       {
@@ -117,29 +116,38 @@ export default function Home() {
         radius: 100,
       },
       (_, status) => {
-        setStreetViewAvailable(
-          status === window.google.maps.StreetViewStatus.OK
-        );
+        const available = status === window.google.maps.StreetViewStatus.OK;
+        setStreetViewAvailable(available);
+        if (!available) setShowStreetView(false); // disable if unavailable
       }
     );
   }, [coordinate, isLoaded]);
 
-  // pan/zoom to a new random coordinate
   function handleNewPlace() {
     const coord = getRandomCoordinate();
     setCoordinate(coord);
     setZoomLevel(5);
-    if (!mapRef.current) return;
-    mapRef.current.panTo({ lat: coord.lat, lng: coord.lon });
-    mapRef.current.setZoom(5);
-    apply3D(mapRef.current, is3D);
 
-    // smooth zoom up
+    if (!mapRef.current) return;
+
+    const map = mapRef.current;
+    map.panTo({ lat: coord.lat, lng: coord.lon });
+    map.setZoom(5);
+    map.setTilt(0);
+    map.setHeading(0);
+
+    // Smooth zoom then apply tilt if no street view
     let z = 5;
     const iv = setInterval(() => {
       z += 1;
-      if (z > 16) return clearInterval(iv);
-      mapRef.current.setZoom(z);
+      if (z > 18) {
+        clearInterval(iv);
+        if (is3D && !streetViewAvailable) {
+          apply3D(map, true);
+        }
+        return;
+      }
+      map.setZoom(z);
       setZoomLevel(z);
     }, 250);
   }
@@ -176,13 +184,15 @@ export default function Home() {
               <Marker
                 position={{ lat: coordinate.lat, lng: coordinate.lon }}
                 onClick={() => {
-                  mapRef.current.panTo({
-                    lat: coordinate.lat,
-                    lng: coordinate.lon,
-                  });
-                  mapRef.current.setZoom(17);
-                  setZoomLevel(17);
-                  apply3D(mapRef.current, is3D);
+                  const map = mapRef.current;
+                  map.panTo({ lat: coordinate.lat, lng: coordinate.lon });
+                  map.setZoom(18);
+                  setZoomLevel(18);
+                  if (is3D && !streetViewAvailable) {
+                    apply3D(map, true);
+                  } else {
+                    apply3D(map, false);
+                  }
                 }}
               />
             )}
@@ -195,8 +205,17 @@ export default function Home() {
           Show me another spot
         </button>
         <button
-          onClick={() => setShowStreetView((v) => !v)}
-          style={btnStyle}
+          onClick={() => {
+            if (streetViewAvailable) {
+              setShowStreetView((v) => !v);
+            }
+          }}
+          disabled={!streetViewAvailable}
+          style={{
+            ...btnStyle,
+            backgroundColor: streetViewAvailable ? "#333" : "#777",
+            cursor: streetViewAvailable ? "pointer" : "not-allowed",
+          }}
         >
           {showStreetView ? "Switch to Map View" : "Switch to Street View"}
         </button>

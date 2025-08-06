@@ -15,7 +15,7 @@ minx, miny, maxx, maxy = landmass.bounds
 # Generate land-only coordinates
 points = []
 tries = 0
-while len(points) < 10000:
+while len(points) < 100000:
     x = random.uniform(minx, maxx)
     y = random.uniform(miny, maxy)
     p = Point(x, y)
