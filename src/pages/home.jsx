@@ -6,6 +6,7 @@ import {
   Marker,
 } from "@react-google-maps/api";
 import roadCoordinates from "../../scripts/roads_coords.json";
+import youBroughtItems from "../../scripts/items.json";
 
 const containerStyle = {
   width: "150%",
@@ -47,6 +48,15 @@ function getRandomCoordinate() {
   return { lat, lon: lng };
 }
 
+// pick n distinct random items from an array
+function pickN(arr, n) {
+  const picked = new Set();
+  while (picked.size < n) {
+    picked.add(arr[Math.floor(Math.random() * arr.length)]);
+  }
+  return Array.from(picked);
+}
+
 // helper to apply or remove the 45° tilt
 function apply3D(map, enable) {
   if (!map) return;
@@ -63,15 +73,21 @@ export default function Home() {
   const [streetViewAvailable, setStreetViewAvailable] = useState(false);
   const [is3D, setIs3D] = useState(true);
   const [country, setCountry] = useState("Unknown Location");
+  const [brought, setBrought] = useState([]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0",
   });
 
+  // On each new coordinate, pick 3 items
+  useEffect(() => {
+    setBrought(pickN(youBroughtItems, 3));
+  }, [coordinate]);
+
   function onMapLoad(map) {
     mapRef.current = map;
-    map.setZoom(18); // Ensure high enough zoom
+    map.setZoom(18);
     apply3D(map, is3D && !streetViewAvailable);
   }
 
@@ -81,7 +97,7 @@ export default function Home() {
     }
   }, [is3D, streetViewAvailable]);
 
-  // Fetch country/city + Street View availability
+  // Fetch country/city + check Street View
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -116,9 +132,9 @@ export default function Home() {
         radius: 100,
       },
       (_, status) => {
-        const available = status === window.google.maps.StreetViewStatus.OK;
-        setStreetViewAvailable(available);
-        if (!available) setShowStreetView(false); // disable if unavailable
+        const avail = status === window.google.maps.StreetViewStatus.OK;
+        setStreetViewAvailable(avail);
+        if (!avail) setShowStreetView(false);
       }
     );
   }, [coordinate, isLoaded]);
@@ -127,7 +143,6 @@ export default function Home() {
     const coord = getRandomCoordinate();
     setCoordinate(coord);
     setZoomLevel(5);
-
     if (!mapRef.current) return;
 
     const map = mapRef.current;
@@ -136,15 +151,12 @@ export default function Home() {
     map.setTilt(0);
     map.setHeading(0);
 
-    // Smooth zoom then apply tilt if no street view
     let z = 5;
     const iv = setInterval(() => {
       z += 1;
       if (z > 18) {
         clearInterval(iv);
-        if (is3D && !streetViewAvailable) {
-          apply3D(map, true);
-        }
+        if (is3D && !streetViewAvailable) apply3D(map, true);
         return;
       }
       map.setZoom(z);
@@ -155,6 +167,7 @@ export default function Home() {
   return (
     <div style={{ textAlign: "center", padding: "2rem" }}>
       <h1>🌍 Stand Here.</h1>
+
       <p>
         Coordinates:{" "}
         <strong>
@@ -164,6 +177,25 @@ export default function Home() {
       <p>
         Location: <strong>{country}</strong>
       </p>
+
+      {/* You brought box */}
+      <div
+        style={{
+          margin: "1rem auto",
+          padding: "1rem",
+          maxWidth: "400px",
+          background: "#194a69",
+          borderRadius: "8px",
+          textAlign: "left",
+        }}
+      >
+        <h3>You brought:</h3>
+        <ul style={{ margin: 0, paddingLeft: "1.2em" }}>
+          {brought.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+      </div>
 
       {isLoaded && (
         <div style={containerStyle}>
@@ -185,14 +217,12 @@ export default function Home() {
                 position={{ lat: coordinate.lat, lng: coordinate.lon }}
                 onClick={() => {
                   const map = mapRef.current;
+                  if (!map) return;
                   map.panTo({ lat: coordinate.lat, lng: coordinate.lon });
                   map.setZoom(18);
                   setZoomLevel(18);
-                  if (is3D && !streetViewAvailable) {
-                    apply3D(map, true);
-                  } else {
-                    apply3D(map, false);
-                  }
+                  if (is3D && !streetViewAvailable) apply3D(map, true);
+                  else apply3D(map, false);
                 }}
               />
             )}
@@ -206,9 +236,7 @@ export default function Home() {
         </button>
         <button
           onClick={() => {
-            if (streetViewAvailable) {
-              setShowStreetView((v) => !v);
-            }
+            if (streetViewAvailable) setShowStreetView((v) => !v);
           }}
           disabled={!streetViewAvailable}
           style={{
