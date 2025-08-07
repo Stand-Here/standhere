@@ -175,59 +175,72 @@ export default function Home() {
     }, 250);
   }
 
-  const defaultDark = '#194a69';
-  const defaultLight = '#f5f3e7';
-  const boxColor = isDarkMode ? defaultDark : (customLightColor || defaultLight);
+  const lightGradient = "linear-gradient(135deg, #a8e063 0%, #2193b0 100%)"; // light green to blue
+  const darkGradient = "linear-gradient(135deg, #004d40 0%, #0b3d91 100%)";  // darker green to darker blue
+  const defaultDark = '#153d56ff';
+  const defaultLight = '#d2e0ffff';
+  const boxColor = isDarkMode ? defaultDark : (defaultLight);
 
   return (
-    <div style={{ textAlign: "center", padding: "2rem" }}>
-      <h1>🌍 Stand Here.</h1>
+     <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        width: "100vw",
+        padding: "1rem",
+        boxSizing: "border-box",
+        background: isDarkMode ? darkGradient : lightGradient,
+        transition: "background 0.5s ease",
+        overflow: "hidden",  // prevent scrollbars from appearing
+      }}
+    >
+      <h1 style={{ color: isDarkMode ? "#fff" : "#000" }}>🌍 Stand Here.</h1>
 
-      <p>
+      <p style={{ color: isDarkMode ? "#ddd" : "#111" }}>
         Coordinates:{" "}
         <strong>
           {coordinate.lat.toFixed(6)}, {coordinate.lon.toFixed(6)}
         </strong>
       </p>
-      <p>
+      <p style={{ color: isDarkMode ? "#ddd" : "#111" }}>
         Location: <strong>{country}</strong>
       </p>
 
-      {/* Custom color picker in light mode */}
-      {!isDarkMode && (
-        <div style={{ margin: '1rem' }}>
-          <label>
-            Light mode box color:&nbsp;
-            <input
-              type="color"
-              value={customLightColor || defaultLight}
-              onChange={e => setCustomLightColor(e.target.value)}
-            />
-          </label>
-        </div>
-      )}
-
-      {/* You brought box */}
       <div
         style={{
           margin: "1rem auto",
           padding: "1rem",
           maxWidth: "400px",
-          background: boxColor,
+          backgroundColor: "#005050",
           borderRadius: "8px",
           textAlign: "left",
+          color: "#fff",
+          boxShadow: "0 0 10px rgba(0,0,0,0.3)",
         }}
       >
-        <h3 style={{ color: isDarkMode ? '#fff' : '#000' }}>You brought:</h3>
-        <ul style={{ margin: 0, paddingLeft: '1.2em', color: isDarkMode ? '#fff' : '#000' }}>
+        <h3>You brought:</h3>
+        <ul style={{ margin: 0, paddingLeft: "1.2em" }}>
           {brought.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
         </ul>
       </div>
-      
+
       {isLoaded && (
-        <div style={containerStyle}>
+        <div
+          style={{
+            width: "90vw",
+            maxWidth: "800px",
+            height: "40vh",  // reduce height so it fits with other content
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
+            marginTop: "1rem",
+          }}
+        >
           <GoogleMap
             mapContainerStyle={{ width: "100%", height: "100%" }}
             center={{ lat: coordinate.lat, lng: coordinate.lon }}
@@ -259,7 +272,7 @@ export default function Home() {
         </div>
       )}
 
-      <div style={{ marginTop: "1rem" }}>
+      <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
         <button onClick={handleNewPlace} style={btnStyle}>
           Show me another spot
         </button>
