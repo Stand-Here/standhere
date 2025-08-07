@@ -1,12 +1,34 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
 // src/App.jsx
+// MAIN PAGE HERE (w/ links to the home and about pages)
 import React from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/home";
+import About from "./pages/about";
+
 
 export default function App() {
-  return <Home />;
+  return (
+    <Router>
+      {/* navigation bar */}
+      <nav
+  style={{
+    padding: "1rem",
+    display: "flex",
+    justifyContent: "center",
+    gap: "1rem",
+  }}
+>
+  <Link to="/">Home</Link>
+  <Link to="/about">About</Link>
+
+</nav>
+
+      {/* Route definitions */}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+       
+      </Routes>
+    </Router>
+  );
 }

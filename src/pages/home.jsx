@@ -8,15 +8,6 @@ import {
 import roadCoordinates from "../../scripts/roads_coords.json";
 import youBroughtItems from "../../scripts/items.json";
 
-const containerStyle = {
-  width: "150%",
-  height: "60vh",
-  position: "relative",
-  left: "50%",
-  transform: "translateX(-50%)",
-  borderRadius: "8px",
-};
-
 const baseMapOptions = {
   mapTypeId: "satellite",
   rotateControl: true,
@@ -70,6 +61,7 @@ function apply3D(map, enable) {
 }
 
 export default function Home() {
+
   const mapRef = useRef(null);
 
   const [coordinate, setCoordinate] = useState(getRandomCoordinate());
@@ -83,9 +75,11 @@ export default function Home() {
 
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // debugging - console.log("API KEY:", import.meta.env.VITE_MAPS_API_KEY);
+
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0",
+    googleMapsApiKey: import.meta.env.VITE_MAPS_API_KEY,
   });
 
   useEffect(() => {
@@ -171,8 +165,10 @@ export default function Home() {
     }, 250);
   }
 
-  const lightGradient = "linear-gradient(135deg, #EAF2F8 0%, #FFFFFF 100%)";
-  const darkGradient = "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)";
+  const lightGradient =
+    "linear-gradient(135deg, #EAF2F8 0%, #FFFFFF 100%)";
+  const darkGradient =
+    "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)";
   const darkCard = "#005050";
   const lightCard = "#FFFFFF";
   const cardColor = isDarkMode ? darkCard : lightCard;
@@ -199,30 +195,40 @@ export default function Home() {
       />
 
       {/* Header with anchors */}
-      <header
-        
-      >
+      <header>
         <h1>🌍 Stand Here.</h1>
-        
       </header>
 
       {/* Main Content */}
-      <main id="main-content" style={{ textAlign: "center", paddingBottom: "2rem" }}>
-        {/* Info + card aligned above map */}
+      <main
+        id="main-content"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem 1rem",
+          minHeight: "100vh",
+          textAlign: "center",
+        }}
+      >
+        {/* Unified block: coordinates/location + "You brought" card */}
         <div
           style={{
-            width: "90vw",
-            maxWidth: "800px",
-            margin: "0.5rem auto 0",
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "center",
             alignItems: "flex-start",
+            gap: "2rem",
+            maxWidth: "700px",
+            margin: "0 auto 1.5rem",
+            width: "100%",
           }}
         >
+          {/* Coordinates & location */}
           <div
             style={{
-              width: "50%",
               textAlign: "center",
+              minWidth: 200,
               color: textSecondaryColor,
             }}
           >
@@ -236,22 +242,24 @@ export default function Home() {
               Location: <strong>{country}</strong>
             </p>
 
-            {/* flag emoji below the location */}
+            {/* flag emoji */}
             {countryCode && (
-              <p style={{ fontSize: "2rem", margin: "0.5rem 0 0 0" }}>
+              <p style={{ fontSize: "2rem", marginTop: "0.5rem" }}>
                 {countryCodeToEmoji(countryCode)}
               </p>
             )}
           </div>
 
+          {/* You brought card */}
           <div
             style={{
-              width: "50%",
               backgroundColor: cardColor,
               borderRadius: "8px",
               padding: "1rem",
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
               color: textColor,
+              minWidth: 280,
+              textAlign: "center",
             }}
           >
             <h3>You brought:</h3>
@@ -334,76 +342,6 @@ export default function Home() {
           </button>
         </div>
       </main>
-
-      {/* About Section */}
-      <section
-        id="about"
-        style={{
-          maxWidth: "800px",
-          margin: "2rem auto",
-          padding: "1rem",
-          color: textColor,
-          backgroundColor: cardColor,
-          borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          lineHeight: "1.5",
-        }}
-      >
-        <h2>About</h2>
-        <p>
-          Stand Here is a simple, creative experience. Discover random spots
-          around the world and imagine the stories behind them.
-        </p>
-      </section>
-
-      {/* Privacy Policy Section */}
-      <section
-        id="privacy"
-        style={{
-          maxWidth: "800px",
-          margin: "2rem auto",
-          padding: "1rem",
-          color: textColor,
-          backgroundColor: cardColor,
-          borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          lineHeight: "1.5",
-        }}
-      >
-        <h2>Privacy Policy</h2>
-        <p>
-          We respect your privacy. This website does not collect personal data
-          except for cookies necessary to run Google AdSense and essential site
-          functionality.
-        </p>
-      </section>
-
-      {/* Contact Section */}
-      <section
-        id="contact"
-        style={{
-          maxWidth: "800px",
-          margin: "2rem auto 4rem",
-          padding: "1rem",
-          color: textColor,
-          backgroundColor: cardColor,
-          borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          lineHeight: "1.5",
-        }}
-      >
-        <h2>Contact</h2>
-        <p> {/*add an email here too, change the mailto*/}
-          Add something here{" "}
-          <a
-            href="mailto:contact@standhere.com"
-            style={{ color: isDarkMode ? "#80cfff" : "#007acc" }}
-          >
-            contact@standhere.com
-          </a>
-          .
-        </p>
-      </section>
 
       {/* Footer */}
       <footer
