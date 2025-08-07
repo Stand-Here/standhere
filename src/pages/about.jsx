@@ -48,15 +48,6 @@ export default function About({ isDarkMode = true }) {
         </section>
 
         <section style={sectionStyle}>
-          <h2>Privacy Policy</h2>
-          <p>
-            We respect your privacy. This website does not collect personal data
-            except for cookies necessary to run Google AdSense and essential site
-            functionality.
-          </p>
-        </section>
-
-        <section style={sectionStyle}>
           <h2>Contact</h2>
           <p> {/* change this up*/}
             Have questions or feedback? Reach out at{" "}
@@ -67,6 +58,15 @@ export default function About({ isDarkMode = true }) {
               contact@standhere.com
             </a>
             .
+          </p>
+        </section>
+
+        <section style={sectionStyle}>
+          <h2>Privacy Policy</h2>
+          <p>
+            We respect your privacy. This website does not collect personal data
+            except for cookies necessary to run Google AdSense and essential site
+            functionality.
           </p>
         </section>
       </div>

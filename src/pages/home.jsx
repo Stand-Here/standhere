@@ -198,31 +198,27 @@ return (
     />
 
     {/* Header with flex-centered emoji + text */}
-    <header
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingTop: "2rem",
-        paddingBottom: "1rem",
-      }}
-    >
-      <h1
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          fontSize: "2.5rem",
-          fontWeight: "bold",
-          color: textColor,
-        }}
-      >
-        <span role="img" aria-label="globe" style={{ fontSize: "2.5rem" }}>
-          🌍
-        </span>
-        Stand Here.
-      </h1>
-    </header>
+    <header style={{ textAlign: 'center', color: 'white' }}>
+  <h1 style={{ fontSize: '2.5rem', marginBottom: '0.25rem' }}>
+    <span role="img" aria-label="globe" style={{ marginRight: '0.5rem' }}>
+      🌍
+    </span>
+    <strong>Stand Here.</strong>
+  </h1>
+  <h2
+    style={{
+      fontWeight: '400',
+      fontSize: '1.5rem',
+      color: '#80cfff',
+      fontStyle: 'italic',
+      marginTop: 0,
+      marginBottom: '1.5rem',
+    }}
+  >
+    Discover places, tell your story.
+  </h2>
+</header>
+
 
     {/* Main Content */}
     <main
@@ -262,7 +258,7 @@ return (
           <p>
             Coordinates:{" "}
             <strong>
-              {coordinate.lat.toFixed(6)}, {coordinate.lon.toFixed(6)}
+              {coordinate.lat.toFixed(2)}, {coordinate.lon.toFixed(2)}
             </strong>
           </p>
           <p>
