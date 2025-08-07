@@ -70,15 +70,26 @@ export default function Home() {
   const [coordinate, setCoordinate] = useState(getRandomCoordinate());
   const [zoomLevel, setZoomLevel] = useState(5);
   const [showStreetView, setShowStreetView] = useState(false);
-  const [streetViewAvailable, setStreetViewAvailable] = useState(false);
+  const [streetViewAvailable, setStreetViewAvailable] = useState(true);
   const [is3D, setIs3D] = useState(true);
   const [country, setCountry] = useState("Unknown Location");
   const [brought, setBrought] = useState([]);
+
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [customLightColor, setCustomLightColor] = useState("");
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0",
   });
+
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(mql.matches);
+    const listener = e => setIsDarkMode(e.matches);
+    mql.addEventListener('change', listener);
+    return () => mql.removeEventListener('change', listener);
+  }, []);
 
   // On each new coordinate, pick 3 items
   useEffect(() => {
@@ -134,7 +145,7 @@ export default function Home() {
       (_, status) => {
         const avail = status === window.google.maps.StreetViewStatus.OK;
         setStreetViewAvailable(avail);
-        if (!avail) setShowStreetView(false);
+        setShowStreetView(avail);
       }
     );
   }, [coordinate, isLoaded]);
@@ -164,6 +175,10 @@ export default function Home() {
     }, 250);
   }
 
+  const defaultDark = '#194a69';
+  const defaultLight = '#f5f3e7';
+  const boxColor = isDarkMode ? defaultDark : (customLightColor || defaultLight);
+
   return (
     <div style={{ textAlign: "center", padding: "2rem" }}>
       <h1>🌍 Stand Here.</h1>
@@ -178,25 +193,39 @@ export default function Home() {
         Location: <strong>{country}</strong>
       </p>
 
+      {/* Custom color picker in light mode */}
+      {!isDarkMode && (
+        <div style={{ margin: '1rem' }}>
+          <label>
+            Light mode box color:&nbsp;
+            <input
+              type="color"
+              value={customLightColor || defaultLight}
+              onChange={e => setCustomLightColor(e.target.value)}
+            />
+          </label>
+        </div>
+      )}
+
       {/* You brought box */}
       <div
         style={{
           margin: "1rem auto",
           padding: "1rem",
           maxWidth: "400px",
-          background: "#194a69",
+          background: boxColor,
           borderRadius: "8px",
           textAlign: "left",
         }}
       >
-        <h3>You brought:</h3>
-        <ul style={{ margin: 0, paddingLeft: "1.2em" }}>
+        <h3 style={{ color: isDarkMode ? '#fff' : '#000' }}>You brought:</h3>
+        <ul style={{ margin: 0, paddingLeft: '1.2em', color: isDarkMode ? '#fff' : '#000' }}>
           {brought.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
         </ul>
       </div>
-
+      
       {isLoaded && (
         <div style={containerStyle}>
           <GoogleMap
@@ -206,7 +235,7 @@ export default function Home() {
             onLoad={onMapLoad}
             options={baseMapOptions}
           >
-            {showStreetView && streetViewAvailable ? (
+            {streetViewAvailable && showStreetView ? (
               <StreetViewPanorama
                 position={{ lat: coordinate.lat, lng: coordinate.lon }}
                 visible
