@@ -42,8 +42,7 @@ export default function About({ isDarkMode = true }) {
         <section style={sectionStyle}>
           <h2>About</h2>
           <p>
-            Stand Here is a simple, creative experience. Discover random spots
-            around the world and imagine the stories behind them.
+            Stand here is a simple and creative way to explore the world and 
           </p>
         </section>
 
