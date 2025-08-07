@@ -8,21 +8,21 @@ from dotenv import load_dotenv
 import os
 
 # Specify the path to your env file inside src/
-load_dotenv(dotenv_path="src/my.env")
+load_dotenv(dotenv_path=".env")
 
-API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+API_KEY = os.getenv("VITE_MAPS_API_KEY")
 if not API_KEY:
     raise RuntimeError("Missing GOOGLE_MAPS_API_KEY environment variable")
 
 
 # === Configuration ===
-LAND_COORDS_PATH = "land_coordinates.json"
-OUTPUT_PATH = "roads_coords.json"
+LAND_COORDS_PATH = "scripts\land_coordinates.json"
+OUTPUT_PATH = "scripts\roads_coords.json"
 BATCH_SIZE = 100           # Max points per Nearest Roads API request
 NEW_POINTS_TO_ADD = 150    # How many new valid coords to add
 
 # Get API key from environment variable
-API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+API_KEY = os.getenv("VITE_MAPS_API_KEY")
 
 # === Safety check ===
 if not API_KEY or "AIza" not in API_KEY:
