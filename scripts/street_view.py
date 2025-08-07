@@ -5,42 +5,52 @@ import random
 import time
 import requests
 
-# config
-LAND_COORDS_PATH = "scripts/land_coordinates.json"
-OUTPUT_PATH = "scripts/roads_coords.json"
-BATCH_SIZE = 100        # max per Roads API request
-TARGET_SAMPLES = 300   # how many snapped points you want
+# === Configuration ===
+LAND_COORDS_PATH = "land_coordinates.json"
+OUTPUT_PATH = "roads_coords.json"
+BATCH_SIZE = 100           # Max points per Nearest Roads API request
+NEW_POINTS_TO_ADD = 150    # How many new valid coords to add
 API_KEY = "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0"
 NEAREST_ROADS_URL = "https://roads.googleapis.com/v1/nearestRoads"
 STREET_VIEW_META_URL = "https://maps.googleapis.com/maps/api/streetview/metadata"
 
-if not API_KEY:
-    raise RuntimeError("Set GOOGLE_MAPS_API_KEY")
+# === Safety check ===
+if not API_KEY or "AIza" not in API_KEY:
+    raise RuntimeError("❌ Google Maps API key is missing or invalid.")
 
-# load your land‐only coords
-with open(LAND_COORDS_PATH) as f:
-    land_points = json.load(f)  # expect [[lat, lng], ...]
+# === Load land-only coordinates ===
+with open(LAND_COORDS_PATH, "r") as f:
+    land_points = json.load(f)
+
+# === Load existing road coordinates with Street View ===
+existing_coords = []
+if os.path.exists(OUTPUT_PATH):
+    try:
+        with open(OUTPUT_PATH, "r") as f:
+            existing_coords = json.load(f)
+    except (json.JSONDecodeError, ValueError):
+        print("⚠️ roads_coords.json is invalid or empty. Starting fresh.")
+
+seen_coords = set((round(p["lat"], 7), round(p["lng"], 7)) for p in existing_coords)
+print(f"📦 Loaded {len(existing_coords)} existing road coordinates with Street View.")
+
+# === Helper Functions ===
 
 def sample_points(n):
-    """randomly sample n points from land_points"""
+    """Randomly sample n land coordinates."""
     return random.sample(land_points, n)
 
-
-
 def snap_batch(batch_points):
-    """call Nearest Roads API on up to 100 pts; returns list of snapped points"""
+    """Snap points to nearest roads using Google Roads API."""
     path = "|".join(f"{lat},{lng}" for lat, lng in batch_points)
-    params = {
-        "points": path,
-        "key": API_KEY,
-    }
+    params = {"points": path, "key": API_KEY}
     resp = requests.get(NEAREST_ROADS_URL, params=params)
     resp.raise_for_status()
     data = resp.json().get("snappedPoints", [])
     return [(p["location"]["latitude"], p["location"]["longitude"]) for p in data]
 
 def has_street_view(lat, lng):
-    """Check if Street View is available at given coordinates"""
+    """Check if Street View is available near given coordinates."""
     params = {
         "location": f"{lat},{lng}",
         "radius": 50,
@@ -49,57 +59,54 @@ def has_street_view(lat, lng):
     try:
         resp = requests.get(STREET_VIEW_META_URL, params=params)
         resp.raise_for_status()
-        data = resp.json()
-        return data.get("status") == "OK"
+        return resp.json().get("status") == "OK"
     except Exception as e:
         print("Street View check failed:", e)
         return False
 
-def main():
-    snapped_with_street_view = []
-    seen_coords = set()
-    attempts = 0
+# === Main Process ===
+snapped_with_street_view = existing_coords.copy()
+new_coords_collected = 0
+attempts = 0
 
-    while len(snapped_with_street_view) < TARGET_SAMPLES:
-        attempts += 1
-        pts = sample_points(BATCH_SIZE)
+while new_coords_collected < NEW_POINTS_TO_ADD:
+    attempts += 1
+    pts = sample_points(BATCH_SIZE)
 
-        try:
-            snapped = snap_batch(pts)
-        except Exception as e:
-            print("Roads API error:", e)
-            time.sleep(1)
+    try:
+        snapped = snap_batch(pts)
+    except Exception as e:
+        print(f"🚫 Roads API error on batch {attempts}: {e}")
+        time.sleep(1)
+        continue
+
+    unique_snapped = list(set(snapped))
+
+    for lat, lng in unique_snapped:
+        coord_key = (round(lat, 7), round(lng, 7))
+        if coord_key in seen_coords:
             continue
 
-        # Remove duplicates from this batch using a set
-        unique_snapped = list(set(snapped))
+        seen_coords.add(coord_key)
 
-        valid_coords = []
-        for lat, lng in unique_snapped:
-            coord_key = (round(lat, 7), round(lng, 7))  # rounded for float comparison stability
-            if coord_key in seen_coords:
-                continue  # skip if we've already seen this coord
+        if has_street_view(lat, lng):
+            snapped_with_street_view.append({"lat": lat, "lng": lng})
+            new_coords_collected += 1
+            print(f"✅ {new_coords_collected}/{NEW_POINTS_TO_ADD} Street View at {lat:.6f}, {lng:.6f}")
+        else:
+            print(f"✗ No Street View at {lat:.6f}, {lng:.6f}")
+            # Optional: log rejected points
 
-            seen_coords.add(coord_key)
+        time.sleep(0.05)  # avoid hitting API rate limits
 
-            if has_street_view(lat, lng):
-                valid_coords.append((lat, lng))
-                print(f"✓ Street View found at {lat}, {lng}")
-            else:
-                print(f"✗ No Street View at {lat}, {lng}")
+        if new_coords_collected >= NEW_POINTS_TO_ADD:
+            break
 
-            time.sleep(0.05)  # to ease rate limiting
+    print(f"📊 Batch {attempts} done: {new_coords_collected} new added so far")
 
-        snapped_with_street_view.extend(valid_coords)
-        print(f"Batch {attempts}: {len(valid_coords)} valid, total={len(snapped_with_street_view)}")
+# === Save updated coordinate list ===
+with open(OUTPUT_PATH, "w") as f:
+    json.dump(snapped_with_street_view, f, indent=2)
 
-    # Truncate to target
-    snapped_with_street_view = snapped_with_street_view[:TARGET_SAMPLES]
-
-    with open(OUTPUT_PATH, "w") as f:
-        json.dump([{"lat": lat, "lng": lng} for lat, lng in snapped_with_street_view], f, indent=2)
-
-    print(f"\n✅ Saved {len(snapped_with_street_view)} valid road coords with Street View to {OUTPUT_PATH}")
-
-if __name__ == "__main__":
-    main()
+print(f"\n🎉 Done! Appended {NEW_POINTS_TO_ADD} new Street View coords.")
+print(f"📍 Total unique coords saved: {len(snapped_with_street_view)} to {OUTPUT_PATH}")
