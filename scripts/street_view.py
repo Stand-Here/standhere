@@ -4,19 +4,32 @@ import json
 import random
 import time
 import requests
+from dotenv import load_dotenv
+import os
+
+# Specify the path to your env file inside src/
+load_dotenv(dotenv_path="src/my.env")
+
+API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+if not API_KEY:
+    raise RuntimeError("Missing GOOGLE_MAPS_API_KEY environment variable")
+
 
 # === Configuration ===
 LAND_COORDS_PATH = "land_coordinates.json"
 OUTPUT_PATH = "roads_coords.json"
 BATCH_SIZE = 100           # Max points per Nearest Roads API request
 NEW_POINTS_TO_ADD = 150    # How many new valid coords to add
-API_KEY = "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0"
-NEAREST_ROADS_URL = "https://roads.googleapis.com/v1/nearestRoads"
-STREET_VIEW_META_URL = "https://maps.googleapis.com/maps/api/streetview/metadata"
+
+# Get API key from environment variable
+API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 # === Safety check ===
 if not API_KEY or "AIza" not in API_KEY:
-    raise RuntimeError("❌ Google Maps API key is missing or invalid.")
+    raise RuntimeError("❌ Google Maps API key is missing or invalid. Please set GOOGLE_MAPS_API_KEY in your .env file.")
+
+NEAREST_ROADS_URL = "https://roads.googleapis.com/v1/nearestRoads"
+STREET_VIEW_META_URL = "https://maps.googleapis.com/maps/api/streetview/metadata"
 
 # === Load land-only coordinates ===
 with open(LAND_COORDS_PATH, "r") as f:
@@ -95,7 +108,6 @@ while new_coords_collected < NEW_POINTS_TO_ADD:
             print(f"✅ {new_coords_collected}/{NEW_POINTS_TO_ADD} Street View at {lat:.6f}, {lng:.6f}")
         else:
             print(f"✗ No Street View at {lat:.6f}, {lng:.6f}")
-            # Optional: log rejected points
 
         time.sleep(0.05)  # avoid hitting API rate limits
 
