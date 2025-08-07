@@ -41,6 +41,14 @@ const btnStyle = {
   cursor: "pointer",
 };
 
+function countryCodeToEmoji(code) {
+  return code
+    .toUpperCase()
+    .replace(/./g, char =>
+      String.fromCodePoint(0x1F1E6 + char.charCodeAt(0) - 65)
+    );
+}
+
 // helper to pick a random road coordinate
 function getRandomCoordinate() {
   const idx = Math.floor(Math.random() * roadCoordinates.length);
@@ -73,9 +81,10 @@ export default function Home() {
   const [streetViewAvailable, setStreetViewAvailable] = useState(true);
   const [is3D, setIs3D] = useState(true);
   const [country, setCountry] = useState("Unknown Location");
+  const [countryCode, setCountryCode] = useState("");
   const [brought, setBrought] = useState([]);
 
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [customLightColor, setCustomLightColor] = useState("");
 
   const { isLoaded } = useJsApiLoader({
@@ -83,13 +92,14 @@ export default function Home() {
     googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0",
   });
 
+  /*
   useEffect(() => {
     const mql = window.matchMedia('(prefers-color-scheme: dark)');
     setIsDarkMode(mql.matches);
     const listener = e => setIsDarkMode(e.matches);
     mql.addEventListener('change', listener);
     return () => mql.removeEventListener('change', listener);
-  }, []);
+  }, []);*/
 
   // On each new coordinate, pick 3 items
   useEffect(() => {
@@ -108,8 +118,7 @@ export default function Home() {
     }
   }, [is3D, streetViewAvailable]);
 
-  // Fetch country/city + check Street View
-  useEffect(() => {
+    useEffect(() => {
     if (!isLoaded) return;
 
     const geocoder = new window.google.maps.Geocoder();
@@ -118,23 +127,26 @@ export default function Home() {
       (results, status) => {
         if (status === "OK" && results.length) {
           const comps = results[0].address_components;
-          const countryComp = comps.find((c) => c.types.includes("country"));
-          const cityComp =
-            comps.find((c) => c.types.includes("locality")) ||
-            comps.find((c) =>
-              c.types.includes("administrative_area_level_1")
-            ) ||
-            comps.find((c) => c.types.includes("postal_town"));
+          const countryComp = comps.find(c => c.types.includes("country"));
+           const cityComp =
+            comps.find(c => c.types.includes("locality")) ||
+            comps.find(c => c.types.includes("administrative_area_level_1")) ||
+            comps.find(c => c.types.includes("postal_town"));
+          setCountryCode(countryComp.short_name);            // <-- add this
+
           setCountry(
             cityComp
               ? `${cityComp.long_name}, ${countryComp.long_name}`
               : countryComp.long_name
           );
         } else {
++         setCountryCode("");
           setCountry("Unknown");
         }
       }
     );
+
+    
 
     const sv = new window.google.maps.StreetViewService();
     sv.getPanorama(
@@ -175,74 +187,94 @@ export default function Home() {
     }, 250);
   }
 
-  const lightGradient = "linear-gradient(135deg, #a8e063 0%, #2193b0 100%)"; // light green to blue
-  const darkGradient = "linear-gradient(135deg, #004d40 0%, #0b3d91 100%)";  // darker green to darker blue
-  const defaultDark = '#153d56ff';
-  const defaultLight = '#d2e0ffff';
-  const boxColor = isDarkMode ? defaultDark : (defaultLight);
+  const lightGradient = "linear-gradient(135deg, #EAF2F8 0%, #FFFFFF 100%)"; // light green to blue
+  const darkGradient = "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)";  // darker green to darker blue
+  const defaultDark = '#005050';
+  const defaultLight = '#FFFFFF';
+  const darkCard   = "#005050";
+  const lightCard  = "#FFFFFF";
+  const cardColor  = isDarkMode ? darkCard : lightCard;
+  const bgColor    = isDarkMode ? darkGradient : lightGradient;
 
   return (
-     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        width: "100vw",
-        padding: "1rem",
-        boxSizing: "border-box",
-        background: isDarkMode ? darkGradient : lightGradient,
-        transition: "background 0.5s ease",
-        overflow: "hidden",  // prevent scrollbars from appearing
-      }}
-    >
-      <h1 style={{ color: isDarkMode ? "#fff" : "#000" }}>🌍 Stand Here.</h1>
-
-      <p style={{ color: isDarkMode ? "#ddd" : "#111" }}>
-        Coordinates:{" "}
-        <strong>
-          {coordinate.lat.toFixed(6)}, {coordinate.lon.toFixed(6)}
-        </strong>
-      </p>
-      <p style={{ color: isDarkMode ? "#ddd" : "#111" }}>
-        Location: <strong>{country}</strong>
-      </p>
-
+    <>
+      {/* Full-screen background */}
       <div
         style={{
-          margin: "1rem auto",
-          padding: "1rem",
-          maxWidth: "400px",
-          backgroundColor: "#005050",
-          borderRadius: "8px",
-          textAlign: "left",
-          color: "#fff",
-          boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          zIndex: -1,
+          background: bgColor,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          transition: 'background 0.5s ease',
         }}
-      >
-        <h3>You brought:</h3>
-        <ul style={{ margin: 0, paddingLeft: "1.2em" }}>
-          {brought.map((item, i) => (
-            <li key={i}>{item}</li>
-          ))}
-        </ul>
+      />
+
+      <div style={{ textAlign: 'center', paddingTop: '1rem' }}>
+        <h1 style={{ color: isDarkMode ? '#fff' : '#000' }}>🌍 Stand Here.</h1>
       </div>
 
+      {/* Info + card aligned above map */}
+      <div
+        style={{
+          width: '90vw',
+          maxWidth: '800px',
+          margin: '0.5rem auto 0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div
+            style = {{
+                width: '50%', 
+                textAlign: 'center',
+                color: isDarkMode ? '#ddd' : '#111',
+            }}
+        >
+          <p>Coordinates: <strong>{coordinate.lat.toFixed(6)}, {coordinate.lon.toFixed(6)}</strong></p>
+          <p>Location: <strong>{country}</strong></p>
+        
+        {/* flag emoji below the location */}
+         {countryCode && (
+           <p style={{ fontSize: '2rem', margin: '0.5rem 0 0 0' }}>
+             {countryCodeToEmoji(countryCode)}
+           </p>
+         )}
+        </div>
+
+        <div
+            style = {{
+                width : '50%', 
+                backgroundColor: cardColor, 
+                borderRadius: '8px',
+                padding: '1rem',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                color: isDarkMode ? '#fff' : '#000',    
+            }}
+          >
+          <h3>You brought:</h3>
+          <ul style={{ listStyle : 'none', paddingLeft: 0, margin: 0 }}>
+            {brought.map((item, i) => <li key={i} style={{marginBottom: '0.5em'}}>{item}</li>)}
+          </ul>
+        </div>
+      </div>
+
+      {/* Map container */}
       {isLoaded && (
         <div
           style={{
-            width: "90vw",
-            maxWidth: "800px",
-            height: "40vh",  // reduce height so it fits with other content
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
-            marginTop: "1rem",
+            width: '90vw',
+            maxWidth: '800px',
+            height: '55vh',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            boxShadow: '0 0 15px rgba(0,0,0,0.3)',
+            margin: '1rem auto',
           }}
         >
           <GoogleMap
-            mapContainerStyle={{ width: "100%", height: "100%" }}
+            mapContainerStyle={{ width: '100%', height: '100%' }}
             center={{ lat: coordinate.lat, lng: coordinate.lon }}
             zoom={zoomLevel}
             onLoad={onMapLoad}
@@ -263,8 +295,7 @@ export default function Home() {
                   map.panTo({ lat: coordinate.lat, lng: coordinate.lon });
                   map.setZoom(18);
                   setZoomLevel(18);
-                  if (is3D && !streetViewAvailable) apply3D(map, true);
-                  else apply3D(map, false);
+                  if (is3D) apply3D(map, true);
                 }}
               />
             )}
@@ -272,27 +303,16 @@ export default function Home() {
         </div>
       )}
 
-      <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
-        <button onClick={handleNewPlace} style={btnStyle}>
-          Show me another spot
-        </button>
+      {/* Controls */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <button onClick={handleNewPlace} style={btnStyle}>Show me another spot</button>
         <button
-          onClick={() => {
-            if (streetViewAvailable) setShowStreetView((v) => !v);
-          }}
-          disabled={!streetViewAvailable}
-          style={{
-            ...btnStyle,
-            backgroundColor: streetViewAvailable ? "#333" : "#777",
-            cursor: streetViewAvailable ? "pointer" : "not-allowed",
-          }}
+          onClick={() => streetViewAvailable && setShowStreetView(v => !v)}
+          style={{ ...btnStyle, backgroundColor: streetViewAvailable ? '#333' : '#777', cursor: streetViewAvailable ? 'pointer' : 'not-allowed' }}
         >
-          {showStreetView ? "Switch to Map View" : "Switch to Street View"}
-        </button>
-        <button onClick={() => setIs3D((v) => !v)} style={btnStyle}>
-          {is3D ? "Turn 2D" : "Turn 3D"}
+          {showStreetView ? 'Switch to Map View' : 'Switch to Street View'}
         </button>
       </div>
-    </div>
+    </>
   );
 }
