@@ -92,14 +92,14 @@ export default function Home() {
     googleMapsApiKey: "AIzaSyBX8UM3Qjw2kU0QaqcbZEy4eJxvce-Diz0",
   });
 
-  /*
+  
   useEffect(() => {
     const mql = window.matchMedia('(prefers-color-scheme: dark)');
     setIsDarkMode(mql.matches);
     const listener = e => setIsDarkMode(e.matches);
     mql.addEventListener('change', listener);
     return () => mql.removeEventListener('change', listener);
-  }, []);*/
+  }, []);
 
   // On each new coordinate, pick 3 items
   useEffect(() => {
