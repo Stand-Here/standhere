@@ -10,18 +10,23 @@ export default function App() {
   return (
     <Router>
       {/* navigation bar */}
-      <nav
+    <nav
   style={{
     padding: "1rem",
     display: "flex",
     justifyContent: "center",
     gap: "1rem",
+    backgroundColor: "transparent", // optional
   }}
 >
-  <Link to="/">Home</Link>
-  <Link to="/about">About</Link>
-
+  <Link to="/" style={{ color: "#FFFFFF", textDecoration: "none" }}>
+    Home
+  </Link>
+  <Link to="/about" style={{ color: "#FFFFFF", textDecoration: "none" }}>
+    About
+  </Link>
 </nav>
+
 
       {/* Route definitions */}
       <Routes>

@@ -32,13 +32,16 @@ const btnStyle = {
   cursor: "pointer",
 };
 
-function countryCodeToEmoji(code) {
-  return code
+function countryCodeToTwemojiUrl(code) {
+  const base = "https://twemoji.maxcdn.com/v/latest/svg/";
+  const hex = code
     .toUpperCase()
-    .replace(/./g, (char) =>
-      String.fromCodePoint(0x1f1e6 + char.charCodeAt(0) - 65)
-    );
+    .split("")
+    .map(c => (0x1f1e6 + c.charCodeAt(0) - 65).toString(16))
+    .join("-");
+  return `${base}${hex}.svg`;
 }
+
 
 function getRandomCoordinate() {
   const idx = Math.floor(Math.random() * roadCoordinates.length);
@@ -176,186 +179,216 @@ export default function Home() {
   const textColor = isDarkMode ? "#fff" : "#000";
   const textSecondaryColor = isDarkMode ? "#ddd" : "#111";
 
-  return (
-    <>
-      {/* Full-screen background */}
+return (
+  <>
+    {/* Full-screen background */}
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: -1,
+        background: bgColor,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        transition: "background 0.5s ease",
+      }}
+    />
+
+    {/* Header with flex-centered emoji + text */}
+    <header
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingTop: "2rem",
+        paddingBottom: "1rem",
+      }}
+    >
+      <h1
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          fontSize: "2.5rem",
+          fontWeight: "bold",
+          color: textColor,
+        }}
+      >
+        <span role="img" aria-label="globe" style={{ fontSize: "2.5rem" }}>
+          🌍
+        </span>
+        Stand Here.
+      </h1>
+    </header>
+
+    {/* Main Content */}
+    <main
+      id="main-content"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem 1rem",
+        minHeight: "100vh",
+        textAlign: "center",
+      }}
+    >
+      {/* Coordinates & "You brought" block */}
       <div
         style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: -1,
-          background: bgColor,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          transition: "background 0.5s ease",
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "2rem",
+          maxWidth: "700px",
+          marginBottom: "1.5rem",
+          width: "100%",
         }}
-      />
+      >
+        {/* Coordinates + Location */}
+        <div
+          style={{
+            textAlign: "center",
+            minWidth: 200,
+            color: textSecondaryColor,
+            flex: "1 1 250px",
+          }}
+        >
+          <p>
+            Coordinates:{" "}
+            <strong>
+              {coordinate.lat.toFixed(6)}, {coordinate.lon.toFixed(6)}
+            </strong>
+          </p>
+          <p>
+            Location: <strong>{country}</strong>
+          </p>
 
-      {/* Header with anchors */}
-      <header>
-        <h1>🌍 Stand Here.</h1>
-      </header>
+          {countryCode && (
+  <img
+    src={countryCodeToTwemojiUrl(countryCode)}
+    alt={`${countryCode} flag`}
+    style={{ width: "5rem", height: "5rem", marginTop: "0.5rem" }}
+  />
+)}
+            
 
-      {/* Main Content */}
-      <main
-        id="main-content"
+        </div>
+
+        {/* You brought card */}
+        <div
+          style={{
+            backgroundColor: cardColor,
+            borderRadius: "8px",
+            padding: "1rem",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            color: textColor,
+            minWidth: 280,
+            textAlign: "center",
+            flex: "1 1 280px",
+          }}
+        >
+          <h3>You brought:</h3>
+          <ul style={{ listStyle: "none", paddingLeft: 0, margin: 0 }}>
+            {brought.map((item, i) => (
+              <li key={i} style={{ marginBottom: "0.5em" }}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Map container */}
+      {isLoaded && (
+        <div
+          style={{
+            width: "90vw",
+            maxWidth: "800px",
+            height: "55vh",
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
+            margin: "1rem auto",
+          }}
+        >
+          <GoogleMap
+            mapContainerStyle={{ width: "100%", height: "100%" }}
+            center={{ lat: coordinate.lat, lng: coordinate.lon }}
+            zoom={zoomLevel}
+            onLoad={onMapLoad}
+            options={baseMapOptions}
+          >
+            {streetViewAvailable && showStreetView ? (
+              <StreetViewPanorama
+                position={{ lat: coordinate.lat, lng: coordinate.lon }}
+                visible
+                options={{ pov: { heading: 100, pitch: 0 }, zoom: 1 }}
+              />
+            ) : (
+              <Marker
+                position={{ lat: coordinate.lat, lng: coordinate.lon }}
+                onClick={() => {
+                  const map = mapRef.current;
+                  if (!map) return;
+                  map.panTo({ lat: coordinate.lat, lng: coordinate.lon });
+                  map.setZoom(18);
+                  setZoomLevel(18);
+                  if (is3D) apply3D(map, true);
+                }}
+              />
+            )}
+          </GoogleMap>
+        </div>
+      )}
+
+      {/* Controls */}
+      <div
         style={{
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
           justifyContent: "center",
-          padding: "2rem 1rem",
-          minHeight: "100vh",
-          textAlign: "center",
-        }}
-      >
-        {/* Unified block: coordinates/location + "You brought" card */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-start",
-            gap: "2rem",
-            maxWidth: "700px",
-            margin: "0 auto 1.5rem",
-            width: "100%",
-          }}
-        >
-          {/* Coordinates & location */}
-          <div
-            style={{
-              textAlign: "center",
-              minWidth: 200,
-              color: textSecondaryColor,
-            }}
-          >
-            <p>
-              Coordinates:{" "}
-              <strong>
-                {coordinate.lat.toFixed(6)}, {coordinate.lon.toFixed(6)}
-              </strong>
-            </p>
-            <p>
-              Location: <strong>{country}</strong>
-            </p>
-
-            {/* flag emoji */}
-            {countryCode && (
-              <p style={{ fontSize: "2rem", marginTop: "0.5rem" }}>
-                {countryCodeToEmoji(countryCode)}
-              </p>
-            )}
-          </div>
-
-          {/* You brought card */}
-          <div
-            style={{
-              backgroundColor: cardColor,
-              borderRadius: "8px",
-              padding: "1rem",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              color: textColor,
-              minWidth: 280,
-              textAlign: "center",
-            }}
-          >
-            <h3>You brought:</h3>
-            <ul style={{ listStyle: "none", paddingLeft: 0, margin: 0 }}>
-              {brought.map((item, i) => (
-                <li key={i} style={{ marginBottom: "0.5em" }}>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Map container */}
-        {isLoaded && (
-          <div
-            style={{
-              width: "90vw",
-              maxWidth: "800px",
-              height: "55vh",
-              borderRadius: "8px",
-              overflow: "hidden",
-              boxShadow: "0 0 15px rgba(0,0,0,0.3)",
-              margin: "1rem auto",
-            }}
-          >
-            <GoogleMap
-              mapContainerStyle={{ width: "100%", height: "100%" }}
-              center={{ lat: coordinate.lat, lng: coordinate.lon }}
-              zoom={zoomLevel}
-              onLoad={onMapLoad}
-              options={baseMapOptions}
-            >
-              {streetViewAvailable && showStreetView ? (
-                <StreetViewPanorama
-                  position={{ lat: coordinate.lat, lng: coordinate.lon }}
-                  visible
-                  options={{ pov: { heading: 100, pitch: 0 }, zoom: 1 }}
-                />
-              ) : (
-                <Marker
-                  position={{ lat: coordinate.lat, lng: coordinate.lon }}
-                  onClick={() => {
-                    const map = mapRef.current;
-                    if (!map) return;
-                    map.panTo({ lat: coordinate.lat, lng: coordinate.lon });
-                    map.setZoom(18);
-                    setZoomLevel(18);
-                    if (is3D) apply3D(map, true);
-                  }}
-                />
-              )}
-            </GoogleMap>
-          </div>
-        )}
-
-        {/* Controls */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "1rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <button onClick={handleNewPlace} style={btnStyle}>
-            Show me another spot
-          </button>
-          <button
-            onClick={() =>
-              streetViewAvailable && setShowStreetView((v) => !v)
-            }
-            style={{
-              ...btnStyle,
-              backgroundColor: streetViewAvailable ? "#333" : "#777",
-              cursor: streetViewAvailable ? "pointer" : "not-allowed",
-            }}
-          >
-            {showStreetView ? "Switch to Map View" : "Switch to Street View"}
-          </button>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "1rem",
-          color: textColor,
-          borderTop: `1px solid ${isDarkMode ? "#004040" : "#ccc"}`,
-          marginTop: "2rem",
+          gap: "1rem",
           marginBottom: "1rem",
+          flexWrap: "wrap",
         }}
       >
-        © 2025 Stand Here. All rights reserved.
-      </footer>
-    </>
-  );
+        <button onClick={handleNewPlace} style={btnStyle}>
+          Show me another spot
+        </button>
+        <button
+          onClick={() =>
+            streetViewAvailable && setShowStreetView((v) => !v)
+          }
+          style={{
+            ...btnStyle,
+            backgroundColor: streetViewAvailable ? "#333" : "#777",
+            cursor: streetViewAvailable ? "pointer" : "not-allowed",
+          }}
+        >
+          {showStreetView ? "Switch to Map View" : "Switch to Street View"}
+        </button>
+      </div>
+    </main>
+
+    {/* Footer */}
+    <footer
+      style={{
+        textAlign: "center",
+        padding: "1rem",
+        color: textColor,
+        borderTop: `1px solid ${isDarkMode ? "#004040" : "#ccc"}`,
+        marginTop: "2rem",
+        marginBottom: "1rem",
+      }}
+    >
+      © 2025 Stand Here. All rights reserved.
+    </footer>
+  </>
+);
+
 }
