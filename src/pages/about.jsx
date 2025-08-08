@@ -107,7 +107,7 @@ export default function About({ isDarkMode = true }) {
             Stand Here was built by Diya Kannan and Lakshyaa Nathan, two computer science undergraduates with a shared love for technology, storytelling, and the thrill of discovering new places. What started as a fun side project quickly became a creative way to blend code, maps, and imagination into something people of all ages can enjoy.
           </p>
           <p>
-            Our goal is simple: to inspire curiosity, spark creativity, and make the world feel a little smaller — one random spot at a time. Whether you’re here to discover hidden corners of the globe or to dream up adventures that never were, we hope you’ll find a little bit of magic in every click.
+            Our goal is simple: to inspire curiosity, spark creativity, and make the world feel a little smaller, one random spot at a time. Whether you’re here to discover hidden corners of the globe or to dream up adventures that never were, we hope you’ll find a little bit of magic in every click.
           </p>
         </section>
       </div>
