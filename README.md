@@ -1,2 +1,3 @@
-https://standhere.vercel.app/
+https://standhere.netlify.app/
+
 
