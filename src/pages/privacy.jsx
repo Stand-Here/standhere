@@ -1,6 +1,6 @@
 import React from "react";
-{/* WE HAVE TO CHANE EVERYTHING IN HERE */}
-export default function About({ isDarkMode = true }) {
+{/* WE HAVE TO CHANGE EVERYTHING IN HERE */}
+export default function Privacy({ isDarkMode = true }) {
   const textColor = isDarkMode ? "#fff" : "#000";
   const cardColor = isDarkMode ? "#005050" : "#FFFFFF";
 
@@ -39,14 +39,16 @@ export default function About({ isDarkMode = true }) {
       />
 
       <div style={{ padding: "2rem" }}>
-        <section style={sectionStyle}>
-          <h2>About</h2>
-          <p>
-            Stand Here is your instant ticket to anywhere. With a single click, you’ll be able to immerse yourself in a random corner of the world, from quiet village streets to bustling city squares.
 
-            Each location comes with a delightfully odd list of “things you brought” to spark your imagination and set the scene. It’s entirely up to you where the journey goes next!
-            </p>
+        <section style={sectionStyle}>
+          <h2>Privacy Policy</h2>
+          <p>
+            We respect your privacy. This website does not collect personal data
+            except for cookies necessary to run Google AdSense and essential site
+            functionality.
+          </p>
         </section>
+
       </div>
     </div>
   );

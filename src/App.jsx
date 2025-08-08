@@ -4,7 +4,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/home";
 import About from "./pages/about";
-
+import Contact from "./pages/contact";
+import Privacy from "./pages/privacy";
 
 export default function App() {
   return (
@@ -25,6 +26,12 @@ export default function App() {
   <Link to="/about" style={{ color: "#FFFFFF", textDecoration: "none" }}>
     About
   </Link>
+  <Link to="/contact" style={{ color: "#FFFFFF", textDecoration: "none" }}>
+    Contact
+  </Link>
+  <Link to="/privacy-policy" style={{ color: "#FFFFFF", textDecoration: "none" }}>
+    Privacy Policy
+  </Link>
 </nav>
 
 
@@ -32,6 +39,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy-policy" element={<Privacy />} />
        
       </Routes>
     </Router>
