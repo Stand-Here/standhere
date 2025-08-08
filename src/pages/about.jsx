@@ -42,8 +42,10 @@ export default function About({ isDarkMode = true }) {
         <section style={sectionStyle}>
           <h2>About</h2>
           <p>
-            Stand here is a simple and creative way to explore the world and 
-          </p>
+            Stand Here is your instant ticket to anywhere. With a single click, you’ll be able to immerse yourself in a random corner of the world, from quiet village streets to bustling city squares.
+
+            Each location comes with a delightfully odd list of “things you brought” to spark your imagination and set the scene. It’s entirely up to you where the journey goes next!
+            </p>
         </section>
 
         <section style={sectionStyle}>
