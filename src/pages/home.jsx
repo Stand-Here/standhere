@@ -178,11 +178,11 @@ export default function Home() {
   const bgColor = isDarkMode ? darkGradient : lightGradient;
   const textColor = isDarkMode ? "#fff" : "#000";
   const textSecondaryColor = isDarkMode ? "#ddd" : "#111";
-  const contentMax = 800;
+  const contentMax = 900;
   const pageWrap = {
     maxWidth: 1100,
     margin: "0 auto",
-    padding: "0 16px",
+    padding: "0 14px",
     fontFamily: "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     color: textColor,
   };
@@ -196,6 +196,7 @@ export default function Home() {
       <div
         style={{
           position: "fixed",
+          inset: 0,
           top: 0,
           left: 0,
           right: 0,
@@ -245,21 +246,21 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            paddingBottom: "3rem",
-            minHeight: "100vh",
+            paddingBottom: "0.75rem",
+            minHeight: "88vh",
             textAlign: "center",
-            gap: "2rem",
+            gap: "1rem",
           }}
         >
           {/* Coordinates & "You brought" block */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "2rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "1rem",
               width: "100%",
               maxWidth: contentMax,
-              margin: "0 auto",
+              //margin: "0 auto",
               alignItems: "stretch",
             }}
           >
@@ -268,28 +269,29 @@ export default function Home() {
               style={{
                 textAlign: "center",
                 color: textSecondaryColor,
-                padding: "1rem 1.25rem",
+                padding: "0.4rem 0.6rem",
                 backgroundColor: isDarkMode ? "rgba(0,80,80,0.3)" : "rgba(255,255,255,0.8)",
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                borderRadius: "10px",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
                 fontFamily: "'Roboto Mono', monospace",
-                fontSize: "1.1rem",
-                userSelect: "text",
+                fontSize: "0.95rem",
+                //userSelect: "text",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "0.75rem",
-                minHeight: "200px",
+                gap: "0.15rem",
+                minHeight: "80px",
                 justifyContent: "center",
+                lineHeight: 1.2,
               }}
             >
-              <p>
+              <p style={{margin: 0}}>
                 Coordinates:{" "}
                 <strong>
                   {coordinate.lat.toFixed(2)}, {coordinate.lon.toFixed(2)}
                 </strong>
               </p>
-              <p>
+              <p style={{margin: 0}}>
                 Location: <strong>{country}</strong>
               </p>
               {countryCode && (
@@ -297,11 +299,9 @@ export default function Home() {
                   src={countryCodeToTwemojiUrl(countryCode)}
                   alt={`${countryCode} flag`}
                   style={{
-                    width: "5rem",
-                    height: "5rem",
-                    marginTop: "0.5rem",
-                    borderRadius: "50%",
-                    boxShadow: "0 0 8px rgba(0,0,0,0.3)",
+                    width: "100px",
+                    height: "75px",
+                    marginTop: "0.25rem",
                   }}
                 />
               )}
@@ -311,27 +311,29 @@ export default function Home() {
             <div
               style={{
                 backgroundColor: cardColor,
-                borderRadius: "12px",
-                padding: "1.5rem",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                borderRadius: "10px",
+                padding: "0.5rem 0.7rem",
+                boxShadow: "0 3px 14px rgba(0,0,0,0.3)",
                 color: textColor,
                 textAlign: "center",
-                flex: "1 1 280px",
-                border: `2px solid ${textColor}`,
+                //flex: "1 1 280px",
+                border: `1px solid ${textColor}`,
                 fontSize: "1rem",
                 fontWeight: "400",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
-                userSelect: "none",
+                lineHeight: 1.35,
+                minHeight: "90px",
+                //userSelect: "none",
               }}
             >
               <h3
                 style={{
-                  fontSize: "1.5rem",
-                  marginBottom: "1rem",
+                  fontSize: "1.15rem",
+                  marginBottom: "0 0 0.25rem",
                   fontWeight: "700",
-                  letterSpacing: "0.05em",
+                  letterSpacing: "0.02em",
                 }}
               >
                 You brought:
@@ -339,15 +341,12 @@ export default function Home() {
               <ul
                 style={{
                   listStyle: "none",
-                  paddingLeft: 0,
+                  padding: 0,
                   margin: 0,
-                  fontSize: "1.05rem",
-                  lineHeight: 1.6,
-                  color: textColor,
                 }}
               >
                 {brought.map((item, i) => (
-                  <li key={i} style={{ marginBottom: "0.7em" }}>
+                  <li key={i} style={{ marginBottom: "0.25em" }}>
                     {item}
                   </li>
                 ))}
