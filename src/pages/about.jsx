@@ -53,10 +53,10 @@ export default function About({ isDarkMode = true }) {
           <p> {/* change this up*/}
             Have questions or feedback? Reach out at{" "}
             <a
-              href="mailto:contact@standhere.com"
+              href="mailto:standhere.contact@gmail.com"
               style={{ color: linkColor }}
             >
-              contact@standhere.com
+              standhere.contact@gmail.com
             </a>
             .
           </p>
