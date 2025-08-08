@@ -178,6 +178,12 @@ export default function Home() {
   const bgColor = isDarkMode ? darkGradient : lightGradient;
   const textColor = isDarkMode ? "#fff" : "#000";
   const textSecondaryColor = isDarkMode ? "#ddd" : "#111";
+  const contentMax = 800;
+  const pageWrap = {
+    maxWidth: 1100,           // tweak to taste
+    margin: "0 auto",
+    padding: "0 16px",
+  };
 
 return (
   <>
@@ -196,7 +202,7 @@ return (
         transition: "background 0.5s ease",
       }}
     />
-
+    <div style={pageWrap}>
     {/* Header with flex-centered emoji + text */}
     <header style={{ textAlign: 'center', color: 'white' }}>
   <h1 style={{ fontSize: '2.5rem', marginBottom: '0.25rem' }}>
@@ -228,7 +234,7 @@ return (
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "2rem 1rem",
+        padding: "2rem 0",
         minHeight: "100vh",
         textAlign: "center",
       }}
@@ -236,23 +242,22 @@ return (
       {/* Coordinates & "You brought" block */}
       <div
         style={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "2rem",
-          maxWidth: "700px",
-          marginBottom: "1.5rem",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: "1rem",
           width: "100%",
+          maxWidth: contentMax,
+          margin: "0 auto 1.5rem",
+          alignItems: "stretch",
         }}
       >
         {/* Coordinates + Location */}
         <div
           style={{
             textAlign: "center",
-            minWidth: 200,
             color: textSecondaryColor,
-            flex: "1 1 250px",
+            padding: "0.75rem",
+            height: "100%",
           }}
         >
           <p>
@@ -284,7 +289,6 @@ return (
             padding: "1rem",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             color: textColor,
-            minWidth: 280,
             textAlign: "center",
             flex: "1 1 280px",
           }}
@@ -304,8 +308,8 @@ return (
       {isLoaded && (
         <div
           style={{
-            width: "90vw",
-            maxWidth: "800px",
+            width: "100%",
+            maxWidth: contentMax,
             height: "55vh",
             borderRadius: "8px",
             overflow: "hidden",
@@ -384,6 +388,7 @@ return (
     >
       © 2025 Stand Here. All rights reserved.
     </footer>
+    </div>
   </>
 );
 
