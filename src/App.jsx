@@ -1,5 +1,4 @@
 // src/App.jsx
-// MAIN PAGE HERE (w/ links to the home and about pages)
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/home";
@@ -10,38 +9,58 @@ import Privacy from "./pages/privacy";
 export default function App() {
   return (
     <Router>
-      {/* navigation bar */}
-    <nav
-  style={{
-    padding: "1rem",
-    display: "flex",
-    justifyContent: "center",
-    gap: "1rem",
-    backgroundColor: "transparent", // optional
-  }}
->
-  <Link to="/" style={{ color: "#FFFFFF", textDecoration: "none" }}>
-    Home
-  </Link>
-  <Link to="/about" style={{ color: "#FFFFFF", textDecoration: "none" }}>
-    About
-  </Link>
-  <Link to="/contact" style={{ color: "#FFFFFF", textDecoration: "none" }}>
-    Contact
-  </Link>
-  <Link to="/privacy-policy" style={{ color: "#FFFFFF", textDecoration: "none" }}>
-    Privacy Policy
-  </Link>
-</nav>
+      {/* Header with branding and navigation */}
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "0.75rem 1.5rem",
+          backgroundColor: "transparent",
+          color: "#FFFFFF",
+          fontSize: "0.9rem", // Smaller base font
+        }}
+      >
+        <div
+          style={{
+            fontWeight: "bold",
+            fontSize: "1.2rem", // Smaller logo text
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+          }}
+        >
+          <span role="img" aria-label="earth">
+            🌍
+          </span>
+          <span>Stand Here.</span>
+        </div>
 
+        <nav style={{ display: "flex", gap: "1rem" }}>
+          <Link to="/" style={{ color: "#FFFFFF", textDecoration: "none", fontSize: "0.9rem" }}>
+            Home
+          </Link>
+          <Link to="/about" style={{ color: "#FFFFFF", textDecoration: "none", fontSize: "0.9rem" }}>
+            About
+          </Link>
+          <Link to="/contact" style={{ color: "#FFFFFF", textDecoration: "none", fontSize: "0.9rem" }}>
+            Contact
+          </Link>
+          <Link
+            to="/privacy-policy"
+            style={{ color: "#FFFFFF", textDecoration: "none", fontSize: "0.9rem" }}
+          >
+            Privacy Policy
+          </Link>
+        </nav>
+      </header>
 
-      {/* Route definitions */}
+      {/* Page Routes */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy-policy" element={<Privacy />} />
-       
       </Routes>
     </Router>
   );
